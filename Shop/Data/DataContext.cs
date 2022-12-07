@@ -15,6 +15,10 @@ namespace Shop.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.SeedRoles();
+            modelBuilder.SeedUsers();
+            modelBuilder.SeedUserRoles();
         }
 
         public DbSet<Cart> Carts { get; set; }
