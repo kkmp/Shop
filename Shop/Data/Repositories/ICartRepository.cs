@@ -9,5 +9,7 @@ namespace Shop.Data.Repositories
         Task<DbResult<List<Product>>> GetProductsFromCart(Guid issuerId);
         Task<DbResult<Cart>> RemoveProductFromCart(Guid productId, Guid issuerId);
         ParallelQuery<Cart> GetCartsAssociatedWithProductId(Guid productId);
+        Task<bool> IsUsersCartEmpty(string userId);
+        Task<List<Cart>> GetCartsAssociatedWithUserId(Guid userId);
     }
 }

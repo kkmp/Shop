@@ -101,6 +101,17 @@ namespace Shop.Data.Repositories
                 .Where(x => x.ProductId == productId);
         }
 
+        public async Task<bool> IsUsersCartEmpty(string userId) => !await context.Carts.AnyAsync(x => x.UserId == userId);
+
+        public async Task<List<Cart>> GetCartsAssociatedWithUserId(Guid userId)
+        {
+            return await context.Carts
+                .Include(x => x.Product)
+                .Include(x => x.User)
+                .Where(x => x.UserId == userId.ToString())
+                .ToListAsync();
+        }
+
         private async Task<Product> GetProductById(Guid productId)
         {
             return await context.Products.FirstOrDefaultAsync(x => x.Id == productId);

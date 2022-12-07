@@ -36,6 +36,13 @@ namespace Shop.Controllers
             }
         }
 
+        [HttpPost("takeOrder")]
+        public async Task<IActionResult> TakeOrder(OrderCreateDTO order)
+        {
+            return await ExecuteForResult(async () => await orderRepository.TakeOrder(order, GetUserId()));
+        }
+
+
         [HttpGet("myOrders")]
         public async Task<IActionResult> MyOrders()
         {

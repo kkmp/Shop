@@ -6,6 +6,7 @@ namespace Shop.Data.Repositories
     public interface IOrderRepository
     {
         Task<DbResult<float>> GetOrderPrice(Guid userId);
+        Task<DbResult<List<Cart>>> TakeOrder(OrderCreateDTO order, Guid userId);
         Task<DbResult<List<Order>>> GetOrders(Guid userId);
         ParallelQuery<Order> GetOrdersAssociatedWithProductId(Guid productId);
     }
