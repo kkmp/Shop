@@ -29,8 +29,8 @@ namespace Shop.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("index")]
-        public async Task<IActionResult> Index()
+        [HttpGet("getProducts")]
+        public async Task<IActionResult> GetProducts()
         {
             var result = await productRepository.GetProducts();
 

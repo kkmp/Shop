@@ -56,7 +56,7 @@ namespace Shop.Data.Repositories
 
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => product != null, "Product does not exist" }
+                { () => product == null, "Product does not exist" }
             };
 
             var result = Validate(conditions);
