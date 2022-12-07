@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Shop.Data.Models;
+using Shop.Data.UnitOfWork;
 using Shop.DTO.Product;
 using SSC.Data.Repositories;
 
@@ -9,16 +10,12 @@ namespace Shop.Data.Repositories
     public class ProductRepository : BaseRepository<Product>, IProductRepository
     {
         private readonly DataContext context;
-        private readonly IMapper mapper;
-        private readonly IOrderRepository orderRepository;
-        private readonly ICartRepository cartRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ProductRepository(DataContext context, IMapper mapper, IOrderRepository orderRepository, ICartRepository cartRepository)
+        public ProductRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.mapper = mapper;
-            this.orderRepository = orderRepository;
-            this.cartRepository = cartRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<Product>> AddProduct(ProductCreateDTO product)
@@ -34,7 +31,7 @@ namespace Shop.Data.Repositories
                 return result;
             }
 
-            var newProduct = mapper.Map<Product>(product);
+            var newProduct = unitOfWork.Mapper.Map<Product>(product);
 
             await context.AddAsync(newProduct);
             await context.SaveChangesAsync();
@@ -65,11 +62,11 @@ namespace Shop.Data.Repositories
                 return result;
             }
 
-            var orders = orderRepository.GetOrdersAssociatedWithProductId(product.Id);
+            var orders = unitOfWork.OrderRepository.GetOrdersAssociatedWithProductId(product.Id);
 
             context.RemoveRange(orders);
 
-            var carts = cartRepository.GetCartsAssociatedWithProductId(product.Id);
+            var carts = unitOfWork.CartRepository.GetCartsAssociatedWithProductId(product.Id);
 
             context.RemoveRange(carts);
             context.Remove(product);
@@ -93,7 +90,7 @@ namespace Shop.Data.Repositories
                 return result;
             }
 
-            mapper.Map(product, productToCheck);
+            unitOfWork.Mapper.Map(product, productToCheck);
 
             context.Update(productToCheck);
             await context.SaveChangesAsync();

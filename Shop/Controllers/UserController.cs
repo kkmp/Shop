@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Shop.Data.Repositories;
+using Shop.Data.UnitOfWork;
 using Shop.DTO;
 using Shop.DTO.User;
 using Shop.Services;
@@ -18,22 +19,12 @@ namespace Shop.Controllers
     [Route("api/[controller]")]
     public class UserController : CommonController
     {
-        private IConfiguration _config;
-        private readonly IUserRepository userRepository;
-        private readonly IMapper mapper;
-        private readonly UserManager<IdentityUser> userManager;
         private readonly IGenerateJWT generateJWT;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UserController(IConfiguration config,
-            IUserRepository userRepository,
-            IMapper mapper,
-            UserManager<IdentityUser> userManager,
-            IGenerateJWT generateJWT)
+        public UserController(IUnitOfWork unitOfWork, IGenerateJWT generateJWT)
         {
-            _config = config;
-            this.userRepository = userRepository;
-            this.mapper = mapper;
-            this.userManager = userManager;
+            this.unitOfWork = unitOfWork;
             this.generateJWT = generateJWT;
         }
 
@@ -42,11 +33,11 @@ namespace Shop.Controllers
         public async Task<IActionResult> Login(UserLoginDTO login)
         {
             IActionResult response;
-            var result = await userRepository.AuthenticateUser(login);
+            var result = await unitOfWork.UserRepository.AuthenticateUser(login);
 
             if (result.Success)
             {
-                var role = await userManager.GetRolesAsync(result.Data);
+                var role = await unitOfWork.UserManager.GetRolesAsync(result.Data);
                 if (role.Count == 0)
                 {
                     return BadRequestErrorMessage(result.Message);
@@ -66,30 +57,30 @@ namespace Shop.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserCreateDTO user)
         {
-            return await ExecuteForResult(async () => await userRepository.CreateUser(user));
+            return await ExecuteForResult(async () => await unitOfWork.UserRepository.CreateUser(user));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("delete/{userId}")]
         public async Task<IActionResult> Delete(Guid userId)
         {
-            return await ExecuteForResult(async () => await userRepository.DeleteUser(userId));
+            return await ExecuteForResult(async () => await unitOfWork.UserRepository.DeleteUser(userId));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("changeUserRole/{userId}")]
         public async Task<IActionResult> ChangeUserRole(Guid userId, IdDTO roleId)
         {
-            return await ExecuteForResult(async () => await userRepository.ChangeUserRole(userId, roleId.Id.Value));
+            return await ExecuteForResult(async () => await unitOfWork.UserRepository.ChangeUserRole(userId, roleId.Id.Value));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("showUsers")]
         public async Task<IActionResult> ShowUsers()
         {
-            var result = await userRepository.GetNotAdminUsers();
+            var result = await unitOfWork.UserRepository.GetNotAdminUsers();
 
-            return Ok(new { users = mapper.Map<List<UserGetDTO>>(result.Data) });
+            return Ok(new { users = unitOfWork.Mapper.Map<List<UserGetDTO>>(result.Data) });
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Data.Repositories;
+using Shop.Data.UnitOfWork;
 using Shop.DTO;
 using SSC.Controllers;
 
@@ -11,30 +12,30 @@ namespace Shop.Controllers
     [Authorize]
     public class CartController : CommonController
     {
-        private readonly ICartRepository cartRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public CartController(ICartRepository cartRepository)
+        public CartController(IUnitOfWork unitOfWork)
         {
-            this.cartRepository = cartRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost("addToCart")]
         public async Task<IActionResult> AddToCart(IdDTO productId)
         {
-            return await ExecuteForResult(async () => await cartRepository.AddProductToCart(productId.Id.Value, GetUserId()));
+            return await ExecuteForResult(async () => await unitOfWork.CartRepository.AddProductToCart(productId.Id.Value, GetUserId()));
         }
 
         [HttpGet("itemsNumberInCart")]
         public async Task<IActionResult> ItemsNumberInCart()
         {
-            return await ExecuteForResult(async () => await cartRepository.GetNumberOfProductsInCart(GetUserId()));
+            return await ExecuteForResult(async () => await unitOfWork.CartRepository.GetNumberOfProductsInCart(GetUserId()));
         }
 
         [HttpGet("cartList")]
         public async Task<IActionResult> CartList()
         {
             var issuerId = GetUserId();
-            var result = await cartRepository.GetProductsFromCart(issuerId);
+            var result = await unitOfWork.CartRepository.GetProductsFromCart(issuerId);
 
             if (result.Success)
             {
@@ -49,7 +50,7 @@ namespace Shop.Controllers
         [HttpDelete("removeFromCart/{productId}")]
         public async Task<IActionResult> RemoveFromCart(Guid productId)
         {
-            return await ExecuteForResult(async () => await cartRepository.RemoveProductFromCart(productId, GetUserId()));
+            return await ExecuteForResult(async () => await unitOfWork.CartRepository.RemoveProductFromCart(productId, GetUserId()));
         }
     }
 }

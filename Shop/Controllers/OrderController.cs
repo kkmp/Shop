@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Data.Repositories;
+using Shop.Data.UnitOfWork;
 using Shop.DTO.Order;
 using SSC.Controllers;
 namespace Shop.Controllers
@@ -11,20 +12,18 @@ namespace Shop.Controllers
     [Authorize]
     public class OrderController : CommonController
     {
-        private readonly IOrderRepository orderRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public OrderController(IOrderRepository orderRepository, IMapper mapper)
+        public OrderController(IUnitOfWork unitOfWork)
         {
-            this.orderRepository = orderRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet("orderPrice")]
         public async Task<IActionResult> OrderPrice()
         {
             var issuerId = GetUserId();
-            var result = await orderRepository.GetOrderPrice(issuerId);
+            var result = await unitOfWork.OrderRepository.GetOrderPrice(issuerId);
 
             if (result.Success)
             {
@@ -39,7 +38,7 @@ namespace Shop.Controllers
         [HttpPost("takeOrder")]
         public async Task<IActionResult> TakeOrder(OrderCreateDTO order)
         {
-            return await ExecuteForResult(async () => await orderRepository.TakeOrder(order, GetUserId()));
+            return await ExecuteForResult(async () => await unitOfWork.OrderRepository.TakeOrder(order, GetUserId()));
         }
 
 
@@ -47,11 +46,11 @@ namespace Shop.Controllers
         public async Task<IActionResult> MyOrders()
         {
             var issuerId = GetUserId();
-            var result = await orderRepository.GetOrders(issuerId);
+            var result = await unitOfWork.OrderRepository.GetOrders(issuerId);
 
             if (result.Success)
             {
-                return Ok(new { myOrders = mapper.Map<List<OrderGetDTO>>(result.Data) });
+                return Ok(new { myOrders = unitOfWork.Mapper.Map<List<OrderGetDTO>>(result.Data) });
             }
             else
             {

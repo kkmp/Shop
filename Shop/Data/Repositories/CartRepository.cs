@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Shop.Data.Models;
+using Shop.Data.UnitOfWork;
 using SSC.Data.Repositories;
 
 namespace Shop.Data.Repositories
@@ -7,19 +8,19 @@ namespace Shop.Data.Repositories
     public class CartRepository : BaseRepository<Cart>, ICartRepository
     {
         private readonly DataContext context;
-        private readonly IUserRepository userRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public CartRepository(DataContext context, IUserRepository userRepository)
+        public CartRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.userRepository = userRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<Cart>> AddProductToCart(Guid productId, Guid issuerId)
         {
             //productRepo
             var product = await GetProductById(productId);
-            var user = await userRepository.GetUserById(issuerId);
+            var user = await unitOfWork.UserRepository.GetUserById(issuerId);
 
             var conditions = new Dictionary<Func<bool>, string>
             {
@@ -47,7 +48,7 @@ namespace Shop.Data.Repositories
 
         public async Task<DbResult<int>> GetNumberOfProductsInCart(Guid issuerId)
         {
-            if (await userRepository.GetUserById(issuerId) == null)
+            if (await unitOfWork.UserRepository.GetUserById(issuerId) == null)
             {
                 return DbResult<int>.CreateFail("User does not exist");
             }
@@ -59,7 +60,7 @@ namespace Shop.Data.Repositories
 
         public async Task<DbResult<List<Product>>> GetProductsFromCart(Guid issuerId)
         {
-            if (await userRepository.GetUserById(issuerId) == null)
+            if (await unitOfWork.UserRepository.GetUserById(issuerId) == null)
             {
                 return DbResult<List<Product>>.CreateFail("User does not exist");
             }
@@ -76,7 +77,7 @@ namespace Shop.Data.Repositories
             //productRepo
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => userRepository.GetUserById(issuerId).Result == null, "User does not exist" },
+                { () => unitOfWork.UserRepository.GetUserById(issuerId).Result == null, "User does not exist" },
                 { () => GetProductById(productId).Result == null, "Product does not exist" },
                 { () => cart == null, "There is nothing in the cart" }
             };

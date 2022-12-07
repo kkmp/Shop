@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Shop.Data.UnitOfWork;
 using Shop.DTO.User;
 using SSC.Data.Repositories;
 
@@ -9,20 +10,23 @@ namespace Shop.Data.Repositories
     public class UserRepository : BaseRepository<IdentityUser>, IUserRepository
     {
         private readonly DataContext context;
-        private readonly IRoleRepository roleRepository;
+        private readonly IUnitOfWork unitOfWork;
+
+        /*
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly RoleManager<IdentityRole> roleManager;
-        private readonly IMapper mapper;
+        */
 
-        public UserRepository(DataContext context, IMapper mapper, IRoleRepository roleRepository, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public UserRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.mapper = mapper;
-            this.roleRepository = roleRepository;
+            this.unitOfWork = unitOfWork;
+            /*
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.roleManager = roleManager;
+            */
         }
 
         public async Task<DbResult<IdentityUser>> AuthenticateUser(UserLoginDTO login)
@@ -40,7 +44,7 @@ namespace Shop.Data.Repositories
                 return result;
             }
 
-            var signInResult = await signInManager.CheckPasswordSignInAsync(user, login.Password, lockoutOnFailure: false); //metody tego typu
+            var signInResult = await unitOfWork.SignInManager.CheckPasswordSignInAsync(user, login.Password, lockoutOnFailure: false); //metody tego typu
 
             if(signInResult.Succeeded)
             {
@@ -67,15 +71,15 @@ namespace Shop.Data.Repositories
                 return result;
             }
 
-            var newUser = mapper.Map<IdentityUser>(user);
+            var newUser = unitOfWork.Mapper.Map<IdentityUser>(user);
 
             newUser.EmailConfirmed = true;
 
-            var createResult = await userManager.CreateAsync(newUser, user.Password1);
+            var createResult = await unitOfWork.UserManager.CreateAsync(newUser, user.Password1);
 
             if(createResult.Succeeded)
             {
-                await userManager.AddToRoleAsync(newUser, RoleOptions.User);
+                await unitOfWork.UserManager.AddToRoleAsync(newUser, RoleOptions.User);
                 return DbResult<IdentityUser>.CreateSuccess("User created", newUser);
             }
             else
@@ -108,8 +112,8 @@ namespace Shop.Data.Repositories
 
         public async Task<DbResult<List<IdentityUser>>> GetNotAdminUsers()
         {
-            var role = await roleRepository.GetRoleByName(RoleOptions.User);
-            var usersId = await roleRepository.GetUserIdsByRoleId(role.Id);
+            var role = await unitOfWork.RoleRepository.GetRoleByName(RoleOptions.User);
+            var usersId = await unitOfWork.RoleRepository.GetUserIdsByRoleId(role.Id);
 
             var userList = await context.Users.Where(x => usersId.Contains(x.Id)).ToListAsync();
 
@@ -119,8 +123,8 @@ namespace Shop.Data.Repositories
         public async Task<DbResult<IdentityUser>> ChangeUserRole(Guid userId, Guid roleId)
         {
             var user = await GetUserById(userId);
-            var oldRoles = await userManager.GetRolesAsync(user);
-            var roleToCheck = await roleManager.FindByIdAsync(roleId.ToString());
+            var oldRoles = await unitOfWork.UserManager.GetRolesAsync(user);
+            var roleToCheck = await unitOfWork.RoleManager.FindByIdAsync(roleId.ToString());
 
             var conditions = new Dictionary<Func<bool>, string>
             {
@@ -134,8 +138,8 @@ namespace Shop.Data.Repositories
                 return result;
             }
 
-            await userManager.RemoveFromRolesAsync(user, oldRoles);
-            var call = await userManager.AddToRoleAsync(user, roleToCheck.Name);
+            await unitOfWork.UserManager.RemoveFromRolesAsync(user, oldRoles);
+            var call = await unitOfWork.UserManager.AddToRoleAsync(user, roleToCheck.Name);
 
             if (call.Succeeded) {
                 return DbResult<IdentityUser>.CreateSuccess("Role has been changed", user);
@@ -146,10 +150,10 @@ namespace Shop.Data.Repositories
             }
         }
 
-        public async Task<IdentityUser> GetUserById(Guid userId) => await userManager.FindByIdAsync(userId.ToString());
+        public async Task<IdentityUser> GetUserById(Guid userId) => await unitOfWork.UserManager.FindByIdAsync(userId.ToString());
 
-        public async Task<IdentityUser> GetUserByName(string userName) => await userManager.FindByNameAsync(userName);
+        public async Task<IdentityUser> GetUserByName(string userName) => await unitOfWork.UserManager.FindByNameAsync(userName);
 
-        private async Task<IdentityUser> GetUserByEmail(string userEmail) => await userManager.FindByEmailAsync(userEmail);
+        private async Task<IdentityUser> GetUserByEmail(string userEmail) => await unitOfWork.UserManager.FindByEmailAsync(userEmail);
     }
 }

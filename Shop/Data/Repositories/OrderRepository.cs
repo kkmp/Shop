@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Shop.Data.Models;
+using Shop.Data.UnitOfWork;
 using Shop.DTO.Order;
 using SSC.Data.Repositories;
 
@@ -9,26 +10,22 @@ namespace Shop.Data.Repositories
     public class OrderRepository : BaseRepository<Order>, IOrderRepository
     {
         private readonly DataContext context;
-        private readonly IMapper mapper;
-        private readonly IUserRepository userRepository;
-        private readonly ICartRepository cartRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public OrderRepository(DataContext context, IMapper mapper, IUserRepository userRepository, ICartRepository cartRepository)
+        public OrderRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.mapper = mapper;
-            this.userRepository = userRepository;
-            this.cartRepository = cartRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<float>> GetOrderPrice(Guid userId)
         {
-            if (await userRepository.GetUserById(userId) == null)
+            if (await unitOfWork.UserRepository.GetUserById(userId) == null)
             {
                 return DbResult<float>.CreateFail("User does not exist");
             }
 
-            if (await cartRepository.IsUsersCartEmpty(userId.ToString()))
+            if (await unitOfWork.CartRepository.IsUsersCartEmpty(userId.ToString()))
             {
                 return DbResult<float>.CreateFail("Cart is empty");
             }
@@ -40,9 +37,9 @@ namespace Shop.Data.Repositories
 
         public async Task<DbResult<List<Cart>>> TakeOrder(OrderCreateDTO order, Guid userId)
         {
-            var carts = await cartRepository.GetCartsAssociatedWithUserId(userId);
+            var carts = await unitOfWork.CartRepository.GetCartsAssociatedWithUserId(userId);
 
-            if (await userRepository.GetUserById(userId) == null)
+            if (await unitOfWork.UserRepository.GetUserById(userId) == null)
             {
                 return DbResult<List<Cart>>.CreateFail("User does not exist");
             }
@@ -67,7 +64,7 @@ namespace Shop.Data.Repositories
 
         public async Task<DbResult<List<Order>>> GetOrders(Guid userId)
         {
-            if (await userRepository.GetUserById(userId) == null)
+            if (await unitOfWork.UserRepository.GetUserById(userId) == null)
             {
                 return DbResult<List<Order>>.CreateFail("User does not exist");
             }
@@ -90,7 +87,7 @@ namespace Shop.Data.Repositories
 
         private Order MapCartToOrder(OrderCreateDTO order, Cart cart)
         {
-            var newOrder = mapper.Map<Order>(order);
+            var newOrder = unitOfWork.Mapper.Map<Order>(order);
 
             newOrder.Product = cart.Product;
             newOrder.User = cart.User;
