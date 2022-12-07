@@ -68,7 +68,7 @@ namespace IntegrationTests
         public async Task AddProductToCart()
         {
             await AuthorizeUser();
-            var response = await client.GetAsync("api/product/index");
+            var response = await client.GetAsync("api/product/getProducts");
             ProductsResponse data = await response.Content.ReadFromJsonAsync<ProductsResponse>();
             Assert.IsNotEmpty(data.Products);
 
@@ -88,7 +88,7 @@ namespace IntegrationTests
 
             await AuthorizeClient(email, password);
 
-            response = await client.GetAsync("api/product/index");
+            response = await client.GetAsync("api/product/getProducts");
             ProductsResponse data = await response.Content.ReadFromJsonAsync<ProductsResponse>();
             Assert.IsNotEmpty(data.Products);
 
