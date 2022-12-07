@@ -30,6 +30,8 @@ builder.Services
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+
 builder.Services.AddScoped<IGenerateJWT, GenerateJWT>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapping));
