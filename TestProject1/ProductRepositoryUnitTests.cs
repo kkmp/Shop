@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Shop.Data;
 using Shop.Data.Models;
-using Shop.Data.Repositories;
 using Shop.Data.UnitOfWork;
 using Shop.DTO.Product;
 using System;
@@ -257,14 +256,12 @@ namespace TestProject1
             var unitOfWork = scopedServices.GetRequiredService<IUnitOfWork>();
 
             var result = await unitOfWork.ProductRepository.AddProduct(productCreateDto);
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
+            result.EnsureSuccessMessage("Product added");
             Assert.AreEqual(productCreateDto.Name, result.Data.Name);
             Assert.AreEqual(productCreateDto.Category, result.Data.Category);
             Assert.AreEqual(productCreateDto.Description, result.Data.Description);
             Assert.AreEqual(productCreateDto.Photo, result.Data.Photo);
             Assert.AreEqual(productCreateDto.Price, result.Data.Price);
-            Assert.AreEqual("Product added", result.Message);
         }
 
         [Test, Order(2)]
@@ -294,9 +291,7 @@ namespace TestProject1
             await unitOfWork.ProductRepository.AddProduct(productCreateDto);
 
             var result = await unitOfWork.ProductRepository.GetProducts();
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
-            Assert.AreEqual("Success", result.Message);
+            result.EnsureSuccessMessage("Success");
         }
 
         [Test, Order(4)]
@@ -311,12 +306,10 @@ namespace TestProject1
             var call = await unitOfWork.ProductRepository.AddProduct(productCreateDto);
 
             var result = await unitOfWork.ProductRepository.DeleteProduct(call.Data.Id);
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
+            result.EnsureSuccessMessage("Product has been deleted");
             Assert.AreEqual(call.Data.Id, result.Data.Id);
             AssertCartRemoved(context, call.Data.Id);
             AssertOrderRemoved(context, call.Data.Id);
-            Assert.AreEqual("Product has been deleted", result.Message);
         }
 
         private void AssertCartRemoved(DataContext context, Guid cartId)
@@ -338,9 +331,7 @@ namespace TestProject1
             var unitOfWork = scopedServices.GetRequiredService<IUnitOfWork>();
 
             var result = await unitOfWork.ProductRepository.DeleteProduct(Guid.Empty);
-            Assert.False(result.Success);
-            Assert.Null(result.Data);
-            Assert.AreEqual("Product does not exist", result.Message);
+            result.EnsureFailMessage("Product does not exist");
         }
 
         [Test, Order(6)]
@@ -357,15 +348,13 @@ namespace TestProject1
 
             var result = await unitOfWork.ProductRepository.EditProduct(productUpdateDto);
 
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
+            result.EnsureSuccessMessage("Product edited");
             Assert.AreEqual(productUpdateDto.Id, result.Data.Id);
             Assert.AreEqual(productUpdateDto.Name, result.Data.Name);
             Assert.AreEqual(productUpdateDto.Category, result.Data.Category);
             Assert.AreEqual(productUpdateDto.Description, result.Data.Description);
             Assert.AreEqual(productUpdateDto.Photo, result.Data.Photo);
             Assert.AreEqual(productUpdateDto.Price, result.Data.Price);
-            Assert.AreEqual("Product edited", result.Message);
         }
 
         [Test, Order(7)]
@@ -387,9 +376,7 @@ namespace TestProject1
             };
 
             var result = await unitOfWork.ProductRepository.EditProduct(productUpdateDto);
-            Assert.False(result.Success);
-            Assert.Null(result.Data);
-            Assert.AreEqual("Product does not exist", result.Message);
+            result.EnsureFailMessage("Product does not exist");
         }
 
         [Test, Order(8)]
@@ -403,15 +390,13 @@ namespace TestProject1
             var call = await unitOfWork.ProductRepository.AddProduct(productCreateDto);
 
             var result = await unitOfWork.ProductRepository.GetProductDetails(call.Data.Id);
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
+            result.EnsureSuccessMessage("Success");
             Assert.AreEqual(call.Data.Id, result.Data.Id);
             Assert.AreEqual(productCreateDto.Name, result.Data.Name);
             Assert.AreEqual(productCreateDto.Category, result.Data.Category);
             Assert.AreEqual(productCreateDto.Description, result.Data.Description);
             Assert.AreEqual(productCreateDto.Photo, result.Data.Photo);
             Assert.AreEqual(productCreateDto.Price, result.Data.Price);
-            Assert.AreEqual("Success", result.Message);
         }
 
         [Test, Order(9)]
@@ -423,9 +408,7 @@ namespace TestProject1
             var unitOfWork = scopedServices.GetRequiredService<IUnitOfWork>();
 
             var result = await unitOfWork.ProductRepository.GetProductDetails(Guid.Empty);
-            Assert.False(result.Success);
-            Assert.Null(result.Data);
-            Assert.AreEqual("Product does not exist", result.Message);
+            result.EnsureFailMessage("Product does not exist");
         }
 
         [Test, Order(10)]
@@ -440,9 +423,7 @@ namespace TestProject1
             await unitOfWork.ProductRepository.AddProduct(productCreateDto);
 
             var result = await unitOfWork.ProductRepository.SearchProducts(productCreateDto.Name);
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
-            Assert.AreEqual("Success", result.Message);
+            result.EnsureSuccessMessage("Success");
             AssertProductFound(context, result.Data, productCreateDto.Name);
         }
 
@@ -460,10 +441,8 @@ namespace TestProject1
             var unitOfWork = scopedServices.GetRequiredService<IUnitOfWork>();
 
             var result = await unitOfWork.ProductRepository.SearchProducts(null);
-            Assert.True(result.Success);
-            Assert.NotNull(result.Data);
+            result.EnsureSuccessMessage("Success");
             Assert.True(result.Data.Count == 0);
-            Assert.AreEqual("Success", result.Message);
         }
     }
 }

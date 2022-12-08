@@ -16,5 +16,12 @@ namespace TestProject1
             Assert.Null(result.Data);
             Assert.AreEqual(expectedMessage, result.Message);
         }
+
+        public static void EnsureSuccessMessage<T>(this DbResult<T> result, string expectedMessage)
+        {
+            Assert.True(result.Success);
+            Assert.NotNull(result.Data);
+            Assert.AreEqual(expectedMessage, result.Message);
+        }
     }
 }
