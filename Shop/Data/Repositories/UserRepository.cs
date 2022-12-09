@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shop.Data.UnitOfWork;
 using Shop.DTO.User;
@@ -12,21 +11,10 @@ namespace Shop.Data.Repositories
         private readonly DataContext context;
         private readonly IUnitOfWork unitOfWork;
 
-        /*
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly SignInManager<IdentityUser> signInManager;
-        private readonly RoleManager<IdentityRole> roleManager;
-        */
-
         public UserRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
             this.unitOfWork = unitOfWork;
-            /*
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.roleManager = roleManager;
-            */
         }
 
         public async Task<DbResult<IdentityUser>> AuthenticateUser(UserLoginDTO login)

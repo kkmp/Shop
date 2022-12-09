@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Shop.Data;
 using Shop.Data.Repositories;
 using Shop.Services;
 

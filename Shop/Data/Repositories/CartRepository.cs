@@ -18,7 +18,6 @@ namespace Shop.Data.Repositories
 
         public async Task<DbResult<Cart>> AddProductToCart(Guid productId, Guid issuerId)
         {
-            //productRepo
             var product = await GetProductById(productId);
             var user = await unitOfWork.UserRepository.GetUserById(issuerId);
 
@@ -74,7 +73,6 @@ namespace Shop.Data.Repositories
         {
             var cart = await context.Carts.Where(x => x.UserId == issuerId.ToString()).FirstOrDefaultAsync(x => x.ProductId == productId);
 
-            //productRepo
             var conditions = new Dictionary<Func<bool>, string>
             {
                 { () => unitOfWork.UserRepository.GetUserById(issuerId).Result == null, "User does not exist" },

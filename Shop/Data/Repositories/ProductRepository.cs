@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Shop.Data.Models;
 using Shop.Data.UnitOfWork;
 using Shop.DTO.Product;

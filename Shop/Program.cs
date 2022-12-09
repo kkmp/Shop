@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shop.Data;
-using Shop.Data.Repositories;
 using Shop.Data.UnitOfWork;
 using Shop.Services;
 using System.Text;
@@ -28,14 +27,6 @@ builder.Services
  .AddRoles<IdentityRole>()
  .AddEntityFrameworkStores<DataContext>();
 
-/*
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<ICartRepository, CartRepository>();
-builder.Services.AddScoped<IGenerateJWT, GenerateJWT>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-*/
 builder.Services.AddScoped<IGenerateJWT, GenerateJWT>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

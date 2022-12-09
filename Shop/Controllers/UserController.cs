@@ -1,17 +1,10 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using Shop.Data.Repositories;
 using Shop.Data.UnitOfWork;
 using Shop.DTO;
 using Shop.DTO.User;
 using Shop.Services;
 using SSC.Controllers;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace Shop.Controllers
 {

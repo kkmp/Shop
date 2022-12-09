@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shop.Data.Repositories;
 using Shop.Data.UnitOfWork;
 using Shop.DTO;
 using SSC.Controllers;

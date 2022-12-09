@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shop.Services;
-using System.Security.Cryptography;
 
 namespace Shop.Data
 {
